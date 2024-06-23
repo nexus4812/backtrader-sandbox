@@ -162,4 +162,4 @@ cython_debug/
 .idea/
 
 backtest_result.png
-backtest_result
+backtest_results
