@@ -5,6 +5,7 @@ import datetime
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import backtrader.analyzers as btanalyzers
 
 class DonchianChannelStrategy(bt.Strategy):
     params = (
@@ -43,12 +44,16 @@ cerebro.addstrategy(DonchianChannelStrategy)
 cerebro.adddata(data_feed)
 cerebro.broker.setcash(10000.0)
 cerebro.broker.setcommission(commission=0.001)
+cerebro.addanalyzer(btanalyzers.SQN, _name='sqn')
 
 # 初期ポートフォリオの価値
 print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
 # 戦略の実行
-cerebro.run()
+thestrats = cerebro.run()
+thestrat = thestrats[0]
+
+print('SQN:', thestrat.analyzers.sqn.get_analysis())
 
 # 最終ポートフォリオの価値
 print('Ending Portfolio Value: %.2f' % cerebro.broker.getvalue())
