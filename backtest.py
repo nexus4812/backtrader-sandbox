@@ -2,6 +2,7 @@ import backtrader as bt
 import yfinance as yf
 import os
 import itertools
+import multiprocessing
 import matplotlib.pyplot as plt
 
 from strategies.rsi_strategy import RSIStrategy
@@ -13,8 +14,9 @@ def fetch_data(ticker, start_date, end_date):
     data_feed = bt.feeds.PandasData(dataname=data)
     return data_feed
 
-def run_backtest(strategy, params, data_feed, ticker):
-    cerebro = bt.Cerebro()
+def run_backtest(args):
+    strategy, params, data_feed, ticker = args
+    cerebro = bt.Cerebro(maxcpus=1)  # 各プロセスに1コアを割り当て
     cerebro.adddata(data_feed)
     cerebro.addstrategy(strategy, **params)
     cerebro.broker.setcash(10000.0)
@@ -34,15 +36,18 @@ def run_backtest(strategy, params, data_feed, ticker):
         fig = cerebro.plot()[0][0]
         fig.savefig(f'{path}/sqn_{sqn}.png')
 
-    return sqn, final_value, num_trades
+    return strategy.__name__, ticker, params, sqn, final_value, num_trades
 
 if __name__ == '__main__':
+    multiprocessing.set_start_method('spawn')
     strategies = [CombinedRSIMAStrategy]
     tickers = ['AAPL', 'MSFT', 'GOOGL']
     start_date = '2018-01-01'
     end_date = '2023-01-01'
     results = []
 
+    # バックテストの引数リストを作成
+    args_list = []
     for ticker in tickers:
         data_feed = fetch_data(ticker, start_date, end_date)
         for strategy in strategies:
@@ -50,8 +55,11 @@ if __name__ == '__main__':
             param_combinations = list(itertools.product(*optimization_params.values()))
             for params in param_combinations:
                 param_dict = dict(zip(optimization_params.keys(), params))
-                sqn, final_value, num_trades = run_backtest(strategy, param_dict, data_feed, ticker)
-                results.append((strategy.__name__, ticker, param_dict, sqn, final_value, num_trades))
+                args_list.append((strategy, param_dict, data_feed, ticker))
+
+    # マルチプロセッシングプールを使用して並列実行
+    with multiprocessing.Pool(processes=8) as pool:
+        results = pool.map(run_backtest, args_list)
 
     # 結果をSQNの降順でソートして表示
     sorted_results = sorted(results, key=lambda x: x[3], reverse=True)
