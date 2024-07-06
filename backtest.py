@@ -1,39 +1,39 @@
 import backtrader as bt
 import yfinance as yf
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+import os
+import itertools
 
-class BreakoutStrategy(bt.Strategy):
-    params = (('period', 20),)
+from strategies.rsi_strategy import RSIStrategy
+from strategies.donchian_channel_strategy import DonchianChannelStrategy
 
-    def __init__(self):
-        self.highest = bt.indicators.Highest(self.data.high, period=self.params.period)
-        self.lowest = bt.indicators.Lowest(self.data.low, period=self.params.period)
+def run_backtest(strategy, params, ticker, start_date, end_date):
+    data = yf.download(ticker, start=start_date, end=end_date)
+    data_feed = bt.feeds.PandasData(dataname=data)
+    
+    cerebro = bt.Cerebro()
+    cerebro.adddata(data_feed)
+    cerebro.addstrategy(strategy, **params)
+    cerebro.broker.setcash(10000.0)
+    cerebro.broker.setcommission(commission=0.001)
+    cerebro.addanalyzer(bt.analyzers.SQN, _name='sqn')
 
-    def next(self):
-        if not self.position:
-            if self.data.close[0] > self.highest[-1]:
-                self.buy()
-        else:
-            if self.data.close[0] < self.lowest[-1]:
-                self.sell()
+    result = cerebro.run()
+    sqn = result[0].analyzers.sqn.get_analysis().sqn
+    final_value = cerebro.broker.getvalue()
+    
+    return sqn, final_value
 
 if __name__ == '__main__':
-    cerebro = bt.Cerebro()
-    cerebro.addstrategy(BreakoutStrategy)
+    strategies = [RSIStrategy, DonchianChannelStrategy]
+    tickers = ['AAPL', 'MSFT', 'GOOGL']
+    start_date = '2018-01-01'
+    end_date = '2023-01-01'
 
-    data = bt.feeds.PandasData(dataname=yf.download('AAPL', '2022-01-01', '2023-01-01'))
-
-    cerebro.adddata(data)
-    cerebro.broker.setcash(10000.0)
-    cerebro.addsizer(bt.sizers.FixedSize, stake=10)
-    cerebro.broker.setcommission(commission=0.001)
-
-    print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
-    cerebro.run()
-    print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
-
-    # グラフをファイルに保存
-    fig = cerebro.plot()[0][0]
-    fig.savefig('backtest_result.png')
+    for strategy in strategies:
+        optimization_params = strategy.get_optimization_params()
+        param_combinations = list(itertools.product(*optimization_params.values()))
+        for params in param_combinations:
+            param_dict = dict(zip(optimization_params.keys(), params))
+            for ticker in tickers:
+                sqn, final_value = run_backtest(strategy, param_dict, ticker, start_date, end_date)
+                print(f'Strategy: {strategy.__name__}, Ticker: {ticker}, Params: {param_dict}, SQN: {sqn}, Final Value: {final_value:.2f}')
