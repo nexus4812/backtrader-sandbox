@@ -2,6 +2,7 @@ import backtrader as bt
 import yfinance as yf
 import os
 import itertools
+import matplotlib.pyplot as plt
 
 from strategies.rsi_strategy import RSIStrategy
 from strategies.donchian_channel_strategy import DonchianChannelStrategy
@@ -11,7 +12,7 @@ def fetch_data(ticker, start_date, end_date):
     data_feed = bt.feeds.PandasData(dataname=data)
     return data_feed
 
-def run_backtest(strategy, params, data_feed):
+def run_backtest(strategy, params, data_feed, ticker):
     cerebro = bt.Cerebro()
     cerebro.adddata(data_feed)
     cerebro.addstrategy(strategy, **params)
@@ -25,6 +26,12 @@ def run_backtest(strategy, params, data_feed):
     final_value = cerebro.broker.getvalue()
     trade_analysis = result[0].analyzers.trades.get_analysis()
     num_trades = trade_analysis.total.closed if 'total' in trade_analysis and 'closed' in trade_analysis.total else 0
+
+    if sqn > 1.5:
+        path = f'backtest_results/{strategy.__name__}/{ticker}'
+        os.makedirs(path, exist_ok=True)
+        fig = cerebro.plot()[0][0]
+        fig.savefig(f'{path}/sqn_{sqn}.png')
 
     return sqn, final_value, num_trades
 
@@ -42,7 +49,7 @@ if __name__ == '__main__':
             param_combinations = list(itertools.product(*optimization_params.values()))
             for params in param_combinations:
                 param_dict = dict(zip(optimization_params.keys(), params))
-                sqn, final_value, num_trades = run_backtest(strategy, param_dict, data_feed)
+                sqn, final_value, num_trades = run_backtest(strategy, param_dict, data_feed, ticker)
                 results.append((strategy.__name__, ticker, param_dict, sqn, final_value, num_trades))
 
     # 結果をSQNの降順でソートして表示
