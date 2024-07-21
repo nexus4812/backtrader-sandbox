@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from strategies.rsi_strategy import RSIStrategy
 from strategies.donchian_channel_strategy import DonchianChannelStrategy
-from strategies.combined_rsi_ma_strategy import CombinedRSIMAStrategy
+from strategies.donchian_channel_atr_strategy import DonchianChannelATRStrategy
 
 def fetch_data(ticker, start_date, end_date):
     data = yf.download(ticker, start=start_date, end=end_date)
@@ -34,16 +34,17 @@ def run_backtest(args):
         path = f'backtest_results/{strategy.__name__}/{ticker}'
         os.makedirs(path, exist_ok=True)
         fig = cerebro.plot()[0][0]
+        fig.suptitle(f'SQN: {sqn:.2f}', fontsize=16)
         fig.savefig(f'{path}/sqn_{sqn}.png')
 
     return strategy.__name__, ticker, params, sqn, final_value, num_trades
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
-    strategies = [CombinedRSIMAStrategy]
-    tickers = ['AAPL', 'MSFT', 'GOOGL']
+    strategies = [DonchianChannelATRStrategy]
+    tickers = ['VTI']
     start_date = '2018-01-01'
-    end_date = '2023-01-01'
+    end_date = '2024-07-01'
     results = []
 
     # バックテストの引数リストを作成
