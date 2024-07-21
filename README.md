@@ -11,5 +11,16 @@
 1. 下記のコマンドで実行、SQN 順に結果が表示される
 
 ```bash
-docker-compose run backtrader python backtest.py
+docker-compose run streamlit python backtest.py
 ```
+
+## streamlit を利用したブラウザ実行
+
+1. 下記のコマンドにより、コンテナを起動する
+
+```bash
+docker-compose up -d
+```
+
+2. [http://localhost:8501/](http://localhost:8501/)にアクセス
+3. ブラウザが現れるので戦略、ticker, 期間を選択して検証開始
