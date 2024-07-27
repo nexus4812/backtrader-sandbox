@@ -2,16 +2,16 @@
 version: '3.8'
 
 services:
-  # backtrader:
-  #   build: .
-  #   container_name: backtrader_container
-  #   volumes:
-  #     - .:/app
-  #   command: python backtest.py
-
   streamlit:
-    build: .
+    build: docker/streamlit
     ports:
       - "8501:8501"
     volumes:
       - .:/app
+
+  jupyterlab:
+    build: docker/jupyter
+    volumes:
+      - .:/app
+    ports:
+      - "8888:8888"
