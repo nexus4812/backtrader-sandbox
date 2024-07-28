@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from strategies.rsi_strategy import RSIStrategy
 from strategies.donchian_channel_strategy import DonchianChannelStrategy
 from strategies.donchian_channel_atr_strategy import DonchianChannelATRStrategy
+from strategies.donchian_channel_and_simple_stop_loss import DonchianChannelStrategyAndSimpleStopLoss
 
 def fetch_data(ticker, start_date, end_date):
     data = yf.download(ticker, start=start_date, end=end_date)
@@ -41,7 +42,7 @@ def run_backtest(args):
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
-    strategies = [DonchianChannelATRStrategy]
+    strategies = [DonchianChannelStrategyAndSimpleStopLoss]
     tickers = ['VTI']
     start_date = '2018-01-01'
     end_date = '2024-07-01'

@@ -3,3 +3,4 @@ from .donchian_channel_strategy import DonchianChannelStrategy
 from .rsi_strategy import RSIStrategy
 from .combined_rsi_ma_strategy import CombinedRSIMAStrategy
 from .donchian_channel_atr_strategy import DonchianChannelATRStrategy
+from .donchian_channel_and_simple_stop_loss import DonchianChannelStrategyAndSimpleStopLoss
