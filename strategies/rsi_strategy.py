@@ -1,37 +1,37 @@
 from .base_strategy import BaseStrategy
 import backtrader as bt
+import numpy as np
 
-class RSIStrategy(BaseStrategy):
+class RSIStrategy(bt.Strategy):
     params = (
         ('rsi_period', 14),
-        ('rsi_upper', 70),
-        ('rsi_lower', 30),
-        ('stop_loss', 0.05),  # 5% stop loss
+        ('rsi_low', 30),
+        ('take_profit', 0.05),  # 利益確定条件（5％上昇）
+        ('stop_loss', 0.05),    # 損切り条件（5％下落）
     )
 
     def __init__(self):
-        super().__init__(self.params)
-        self.rsi = bt.indicators.RSI(self.data.close, period=self.params.rsi_period)
+        self.rsi = bt.indicators.RelativeStrengthIndex(period=self.params.rsi_period)
+        self.dataclose = self.datas[0].close
         self.buy_price = None
-        self.trade_count = 0
 
     def next(self):
-        if not self.position:
-            if self.rsi < self.params.rsi_lower:
-                self.buy_price = self.data.close[0]
+        if not self.position:  # 現在ポジションがない場合
+            if self.rsi < self.params.rsi_low:  # RSIが低レベルを下回った場合
                 self.buy()
-                self.trade_count += 1
+                self.buy_price = self.dataclose[0]
         else:
-            if self.rsi > self.params.rsi_upper:
+            if self.dataclose[0] >= self.buy_price * (1 + self.params.take_profit):  # 利益確定条件
                 self.sell()
-            elif self.data.close[0] < self.buy_price * (1 - self.params.stop_loss):
+            elif self.dataclose[0] <= self.buy_price * (1 - self.params.stop_loss):  # 損切り条件
                 self.sell()
+
 
     @staticmethod
     def get_optimization_params():
         return {
-            'rsi_period': range(10, 20, 2),
-            'rsi_upper': range(65, 75, 5),
-            'rsi_lower': range(25, 35, 5),
-            'stop_loss': [0.01, 0.02, 0.03, 0.04, 0.05]
+            'rsi_period': range(7, 49, 7),
+            'rsi_low': range(10, 50, 5),
+            'take_profit': np.arange(0.03, 0.10, 0.01),
+            'stop_loss': np.arange(0.03, 0.10, 0.01),
         }
