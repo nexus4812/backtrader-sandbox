@@ -5,8 +5,8 @@ class DonchianChannelATRStrategy(BaseStrategy):
     params = (
         ('upper_period', 120),
         ('lower_period', 60),
-        ('atr_period', 14),
-        ('atr_multiplier', 1.5),
+        ('atr_period', 16),
+        ('atr_multiplier', 2.5),
     )
 
     def __init__(self):
@@ -37,5 +37,5 @@ class DonchianChannelATRStrategy(BaseStrategy):
             'upper_period': range(100, 140, 10),
             'lower_period': range(50, 70, 10),
             'atr_period': range(10, 20, 2),
-            'atr_multiplier': [1.5, 2.0, 2.5],
+            'atr_multiplier': [1.5, 2.0, 2.5, 3.0, 3.5],
         }
