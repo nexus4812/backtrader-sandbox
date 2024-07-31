@@ -6,7 +6,7 @@ class DonchianChannelStrategyAndSimpleStopLoss(bt.Strategy):
     params = (
         ('upper_period', 120),
         ('lower_period', 60),
-        ('stop_loss', 0.10),    # 固定パーセンテージの損切り幅（例：5%）
+        ('stop_loss', 0.20),    # 固定パーセンテージの損切り幅（例：20%）
     )
 
     def __init__(self):
