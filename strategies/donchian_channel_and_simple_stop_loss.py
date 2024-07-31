@@ -32,13 +32,14 @@ class DonchianChannelStrategyAndSimpleStopLoss(bt.Strategy):
         else:
             if self.dataclose[0] < self.stop_price:  # 終値が損切り価格を下回った場合
                 self.sell()  # 損切り
-            elif self.dataclose[0] < self.lower_band[0]:  # 終値が下限バンドを下回った場合
-                self.sell()  # 利確
+            
+            if self.dataclose[0] < self.lower_band[0]:  # 終値が下限バンドを下回った場合
+                self.sell()  # 利確  
 
     @staticmethod
     def get_optimization_params():
         return {
             'upper_period': range(100, 140, 10),
             'lower_period': range(50, 70, 10),
-            'stop_loss': np.arange(0.01, 0.20, 0.01),
+            'stop_loss': np.arange(0.01, 0.50, 0.01),
         }
