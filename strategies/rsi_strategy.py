@@ -30,8 +30,8 @@ class RSIStrategy(bt.Strategy):
     @staticmethod
     def get_optimization_params():
         return {
-            'rsi_period': range(7, 49, 7),
-            'rsi_low': range(10, 50, 5),
-            'take_profit': np.arange(0.03, 0.10, 0.01),
-            'stop_loss': np.arange(0.03, 0.10, 0.01),
+            'rsi_period': range(7, 35, 7),
+            'rsi_low': range(20, 50, 10),
+            'take_profit': np.arange(0.02, 0.30, 0.04),
+            'stop_loss': np.arange(0.02, 0.30, 0.04),
         }
